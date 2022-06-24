@@ -221,14 +221,13 @@ print(lr.coef_, lr.intercept_)
 
 from sklearn.tree import DecisionTreeClassifier
 
-dt = DecisionTreeClassifier(random_state=42)
-
+dt = DecisionTreeClassifier(random_state=42, max_depth=3)
 #여기서도 random_statef를 사용했는데 그 이유는?
 
 dt.fit(train_scaled, Y_train_res)
 
-print(dt.score(train_scaled, Y_train_res))
-print(dt.score(test_scaled, Y_test))
+print('학습:', dt.score(train_scaled, Y_train_res))
+print('검증:', dt.score(test_scaled, Y_test))
 
 
 #분류 과정을 시각화해서 보여준다.
@@ -249,8 +248,8 @@ plt.show()
 dt = DecisionTreeClassifier(max_depth=3, random_state=42)
 dt.fit(train_scaled, Y_train_res)
 
-print(dt.score(train_scaled, Y_train_res))
-print(dt.score(test_scaled, Y_test))
+print('가지치기:', dt.score(train_scaled, Y_train_res))
+print('가지치기:', dt.score(test_scaled, Y_test))
 
 
 

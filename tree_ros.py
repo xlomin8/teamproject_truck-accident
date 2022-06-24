@@ -164,7 +164,8 @@ from sklearn.model_selection import GridSearchCV
 
 # 테스트하고자 하는 파라미터 값들을 사전타입으로 정의
 
-dt_clf = DecisionTreeClassifier(random_state=33)
+dt_clf = DecisionTreeClassifier(random_state=123456, max_depth=3)
+
 parameters = {'max_depth': [3, 5, 7],
               'min_samples_split': [3, 5],
               'splitter': ['best', 'random']}
