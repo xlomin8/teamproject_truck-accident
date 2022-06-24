@@ -68,4 +68,4 @@ print('After OverSampling, counts of label "0": {} \n'.format(sum(Y_train_ros==0
 print('Original dataset shape %s' % Counter(Y_train))
 print('Oversampled dataset shape %s' % Counter(Y_train_ros))
 # Original dataset shape Counter({0: 1919, 1: 171})
-# Oversampled dataset shape Counter({0: 1919, 1: 1919})
+

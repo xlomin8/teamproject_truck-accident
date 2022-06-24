@@ -23,27 +23,39 @@ import matplotlib
 import matplotlib.font_manager as fm
 # fm._rebuild()
 fm.get_fontconfig_fonts()
-font_location = 'C:/Users/ASIA-19/NanumGothic.ttf' # 폰트 파일 이름, 디렉토리 주의
+font_location = 'C:/Users/ASIA-18/NanumGothic.ttf' # 폰트 파일 이름, 디렉토리 주의
 font_name = fm.FontProperties(fname=font_location).get_name()
 matplotlib.rc('font', family=font_name)
 
-
-file = r"D:/work/python/a-truck-accident/data/cleandata_final.xlsx"
-df = pd.read_excel(file, sheet_name="Sheet1")
-
-
-
-print(df.columns)
+# 데이터 로드
+df = pd.read_excel('./cleandata_final_0624.xlsx')
+# print(df.columns)
 
 
 
-# # 기술 속성(descriptive features)
+# 독립변수(특징), 종속변수(라벨) 나누기
 X = df.drop(['사망', '부상자수', '교통사고비용'], axis=1)
-# # 대상 속성(target feature)
 Y = df['사망']
 
+# 훈련셋, 검증셋 나누기
+# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2,  stratify=Y)
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=10)
+# 데이터 불균형 확인
+print(Y_train.value_counts())
+# 0 1919
+# 1 171
+
+# 불균형 비율 계산
+print(Y_train.value_counts().iloc[0] / Y_train.value_counts().iloc[-1])
+# 11.2222222222..
+
+## SMOTE
+from imblearn.over_sampling import SMOTE
+sm = SMOTE(k_neighbors=3)
+X_train_sm, Y_train_sm = sm.fit_resample(X_train, Y_train)
+X_train_sm = pd.DataFrame(X_train_sm, columns=X.columns)
+Y_train_sm = pd.Series(Y_train_sm)
 
 # LightGBM
 # 장점)
@@ -69,33 +81,33 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 # test_scaled = ss.transform(X_test)
 
 
-
+# 모델링
 import lightgbm as lgb
-# ▶ Hyper parametre setting
 
-
-d_train = lgb.Dataset (X_train, label = Y_train)
+d_train = lgb.Dataset (X_train_sm, label = Y_train_sm)
 params = {}
 params [ 'learning_rate'] = 0.02
 params [ 'boosting_type'] = 'gbdt' # GradientBoostingDecisionTree
 params ['objective'] = 'binary'
+params ['boost_from_average'] = False
 params [ 'metric' ] = 'binary_logloss' # metric for binary-class
 params [ 'max_depth'] = 2
 params [ 'num_leaves' ] = 4 # 최대 leaves는 2^(max_depth)
 params ['seed'] = 23456
-# ▶ 학습
+
+
+# 학습
 clf = lgb.train (params, d_train, 500) # 1000 epocs에서 모델 훈련
 
-
-
+# 검증
 from sklearn.metrics import classification_report
 
-Y_pred_train = clf.predict(X_train)
-for i in range(0,len(Y_pred_train)):
-    if Y_pred_train[i]>=.3:       # setting threshold to .5
-       Y_pred_train[i]=1
+Y_pred_train_sm = clf.predict(X_train_sm)
+for i in range(0,len(Y_pred_train_sm)):
+    if Y_pred_train_sm[i]>=.3:       # setting threshold to .5
+       Y_pred_train_sm[i]=1
     else:
-       Y_pred_train[i]=0
+       Y_pred_train_sm[i]=0
 
 Y_pred_test = clf.predict(X_test)
 for i in range(0,len(Y_pred_test)):
@@ -104,7 +116,7 @@ for i in range(0,len(Y_pred_test)):
     else:
        Y_pred_test[i]=0
 
-print(classification_report(Y_train, Y_pred_train))
+print(classification_report(Y_train_sm, Y_pred_train_sm))
 print(classification_report(Y_test, Y_pred_test))
 
 
@@ -114,11 +126,11 @@ print(pd.Series(Y_pred_test).value_counts())
 # 과적합 문제, Train과 Test set에 성능을 최대한 줄여주는 것이 과적합을 방지
 from sklearn.metrics import roc_auc_score
 
-Y_pred_train_proba = clf.predict(X_train)
+Y_pred_train_sm_proba = clf.predict(X_train_sm)
 Y_pred_test_proba = clf.predict(X_test)
 
 
-roc_score_train = roc_auc_score(Y_train, Y_pred_train_proba)
+roc_score_train = roc_auc_score(Y_train_sm, Y_pred_train_sm_proba)
 roc_score_test = roc_auc_score(Y_test, Y_pred_test_proba)
 
 print("roc_score_train :", roc_score_train)
@@ -149,7 +161,7 @@ def roc_curve_plot(Y_test, pred_proba_c1):
     plt.legend()
     plt.show()
 
-roc_curve_plot(Y_train, Y_pred_train_proba)
+roc_curve_plot(Y_train_sm, Y_pred_train_sm_proba)
 
 roc_curve_plot(Y_test, Y_pred_test_proba)
 
