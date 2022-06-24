@@ -1,4 +1,29 @@
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib
+import matplotlib.font_manager as fm
+import matplotlib.patheffects as path_effects
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, recall_score, confusion_matrix
+from sklearn.metrics import f1_score
+
+
+# In[2]:
+
+
+# 한글 깨짐 방지
+import matplotlib
+import matplotlib.font_manager as fm
+# fm._rebuild()
+fm.get_fontconfig_fonts()
+font_location = 'D:/work/python/a-truck-accident/NanumBarunGothic.ttf' # 폰트 파일 이름, 디렉토리 주의
+font_name = fm.FontProperties(fname=font_location).get_name()
+matplotlib.rc('font', family=font_name)
 
 import os
 from os.path import join
@@ -274,8 +299,30 @@ print(dt.score(X_train_res, Y_train_res))
 print(dt.score(X_test, Y_test))
 
 
-import pickle
+# import pickle
+#
+# with open('./decisionTree_smote_y.pickle', 'wb') as f: #모델 저장해두기(피클)
+#     pickle.dump(dt, f)
 
-with open('./decisionTree_smote_y.pickle', 'wb') as f: #모델 저장해두기(피클)
-    pickle.dump(dt, f)
+# # 가장 큰 영향을 미친 요소
+# plt.rcParams['figure.figsize'] = (10, 5)
+# features = df.data.shape[1]
+# plt.xlabel("importance")
+# # plt.xlabel("features")
+# plt.yticks(np.arange(features), df.feature_names)
+# plt.barh(range(features), df.feature_importances_) # BAR가로차트
+# plt.show()
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+# get_ipython().run_line_magic('matplotlib', 'inline')
+plt.style.use(['dark_background'])
+
+ftr_importances_values = dt.feature_importances_
+ftr_importances = pd.Series(ftr_importances_values, index = X_train.columns)
+ftr_top20 = ftr_importances.sort_values(ascending=False)[:20]
+
+plt.figure(figsize=(8,6))
+plt.title('Feature Importances')
+sns.barplot(x=ftr_top20, y=ftr_top20.index)
+plt.show()
