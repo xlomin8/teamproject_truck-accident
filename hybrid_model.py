@@ -16,10 +16,10 @@ import matplotlib
 import matplotlib.font_manager as fm
 # fm._rebuild()
 fm.get_fontconfig_fonts()
-font_location = 'D:/work/python/a-truck-accident/NanumBarunGothic.ttf' # 폰트 파일 이름, 디렉토리 주의
+font_location = './NanumBarunGothic.ttf' # 폰트 파일 이름, 디렉토리 주의
 font_name = fm.FontProperties(fname=font_location).get_name()
 matplotlib.rc('font', family=font_name)
-
+from sklearn.ensemble import HistGradientBoostingClassifier
 import os
 from os.path import join
 import pandas as pd
@@ -39,7 +39,7 @@ pd.value_counts(df['사망']).plot.bar()
 plt.title('사망사고 발생')
 plt.xlabel('사망 여부')
 plt.ylabel('frequency')
-plt.show()
+# plt.show()
 
 # 독립변수(특징), 종속변수(라벨) 나누기
 X = df.drop(['사망', '교통사고비용', '부상자수'], axis=1)
@@ -85,7 +85,7 @@ print('Oversampled dataset shape %s' % Counter(Y_train_res))
 sc = StandardScaler()
 
 #Defining the machine learning models
-model1 = LogisticRegression()
+model1 = LogisticRegression(max_iter=3000)
 model2 = DecisionTreeClassifier(max_depth = 3)
 model3 = SVC()
 model4 = KNeighborsClassifier(n_neighbors = 5, metric = 'minkowski', p = 2)
@@ -113,12 +113,12 @@ cm_SupportVectorClass = confusion_matrix(Y_test, y_pred3)
 cm_KNN = confusion_matrix(Y_test, y_pred4)
 cm_NaiveBayes = confusion_matrix(Y_test, y_pred5)
 
-kfold = model_selection.KFold(n_splits=10, random_state = 42)
-result1 = model_selection.cross_val_score(model1, X_train, Y_train, cv=kfold)
-result2 = model_selection.cross_val_score(model2, X_train, Y_train, cv=kfold)
-result3 = model_selection.cross_val_score(model3, X_train, Y_train, cv=kfold)
-result4 = model_selection.cross_val_score(model4, X_train, Y_train, cv=kfold)
-result5 = model_selection.cross_val_score(model5, X_train, Y_train, cv=kfold)
+kfold = model_selection.KFold(n_splits=10, random_state = 42, shuffle=True)
+result1 = model_selection.cross_val_score(model1, X_train_res, Y_train_res, cv=kfold)
+result2 = model_selection.cross_val_score(model2, X_train_res, Y_train_res, cv=kfold)
+result3 = model_selection.cross_val_score(model3, X_train_res, Y_train_res, cv=kfold)
+result4 = model_selection.cross_val_score(model4, X_train_res, Y_train_res, cv=kfold)
+result5 = model_selection.cross_val_score(model5, X_train_res, Y_train_res, cv=kfold)
 
 print('Accuracy of Logistic Regression Model = ',result1.mean())
 print('Accuracy of Decision Tree Model = ',result2.mean())
@@ -127,3 +127,85 @@ print('Accuracy of k-NN Model = ',result4.mean())
 print('Accuracy of Naive Bayes Model = ',result5.mean())
 #Output:-
 
+#Defining Hybrid Ensemble Learning Model
+# create the sub-models
+estimators = []
+
+#Defining 5 Logistic Regression Models
+model11 = LogisticRegression(penalty = 'l2', random_state = 42)
+estimators.append(('logistic1', model11))
+model12 = LogisticRegression(penalty = 'l2', random_state = 42)
+estimators.append(('logistic2', model12))
+model13 = LogisticRegression(penalty = 'l2', random_state = 42)
+estimators.append(('logistic3', model13))
+model14 = LogisticRegression(penalty = 'l2', random_state = 42)
+estimators.append(('logistic4', model14))
+model15 = LogisticRegression(penalty = 'l2', random_state = 42)
+estimators.append(('logistic5', model15))
+
+#Defining 5 Decision Tree Classifiers
+model16 = DecisionTreeClassifier(max_depth = 3)
+estimators.append(('cart1', model16))
+model17 = DecisionTreeClassifier(max_depth = 4)
+estimators.append(('cart2', model17))
+model18 = DecisionTreeClassifier(max_depth = 5)
+estimators.append(('cart3', model18))
+model19 = DecisionTreeClassifier(max_depth = 2)
+estimators.append(('cart4', model19))
+model20 = DecisionTreeClassifier(max_depth = 3)
+estimators.append(('cart5', model20))
+
+#Defining 5 Support Vector Classifiers
+model21 = SVC(kernel = 'linear')
+estimators.append(('svm1', model21))
+model22 = SVC(kernel = 'poly')
+estimators.append(('svm2', model22))
+model23 = SVC(kernel = 'rbf')
+estimators.append(('svm3', model23))
+model24 = SVC(kernel = 'rbf')
+estimators.append(('svm4', model24))
+model25 = SVC(kernel = 'linear')
+estimators.append(('svm5', model25))
+
+#Defining 5 K-NN classifiers
+model26 = KNeighborsClassifier(n_neighbors = 5, metric = 'minkowski', p = 2)
+estimators.append(('knn1', model26))
+model27 = KNeighborsClassifier(n_neighbors = 5, metric = 'minkowski', p = 2)
+estimators.append(('knn2', model27))
+model28 = KNeighborsClassifier(n_neighbors = 6, metric = 'minkowski', p = 2)
+estimators.append(('knn3', model28))
+model29 = KNeighborsClassifier(n_neighbors = 4, metric = 'minkowski', p = 1)
+estimators.append(('knn4', model29))
+model30 = KNeighborsClassifier(n_neighbors = 5, metric = 'minkowski', p = 1)
+estimators.append(('knn5', model30))
+
+#Defining 5 Naive Bayes classifiers
+model31 = GaussianNB()
+estimators.append(('nbs1', model31))
+model32 = GaussianNB()
+estimators.append(('nbs2', model32))
+model33 = GaussianNB()
+estimators.append(('nbs3', model33))
+model34 = GaussianNB()
+estimators.append(('nbs4', model34))
+model35 = GaussianNB()
+estimators.append(('nbs5', model35))
+
+# Defining the ensemble model
+ensemble = VotingClassifier(estimators)
+ensemble.fit(X_train_res, Y_train_res)
+y_pred = ensemble.predict(X_test)
+
+#Confisuin matrix
+cm_HybridEnsembler = confusion_matrix(Y_test, y_pred)
+
+#Cross-Validation
+seed = 7
+kfold = model_selection.KFold(n_splits=10, random_state=seed, shuffle=True)
+results = model_selection.cross_val_score(ensemble, X_train_res, Y_train_res, cv=kfold)
+print(results.mean())
+#Output:-
+
+import pickle
+with open('./ensemble_5model_pycharm.pickle', 'wb') as f: #모델 저장해두기(피클)
+    pickle.dump(ensemble, f)
