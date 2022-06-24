@@ -45,19 +45,27 @@ print(Y_train.value_counts().iloc[0] / Y_train.value_counts().iloc[-1])
 # 오버샘플링
 print('Before OverSampling, counts of label "1": {}'.format(sum(Y_train==1)))
 print('Before OverSampling, counts of label "0": {} \n'.format(sum(Y_train==0)))
+# Before OverSampling, counts of label "1": 171
+# Before OverSampling, counts of label "0": 1919
 
 ## ROS
 from imblearn.over_sampling import RandomOverSampler
 ros = RandomOverSampler(random_state=0)
-X_train_res, Y_train_res = ros.fit_resample(X_train, Y_train)
+X_train_ros, Y_train_ros = ros.fit_resample(X_train, Y_train)
 # X_train_res = pd.DataFrame(X_train_res, columns=X.columns)
 # Y_train_res = pd.Series(Y_train_res)
 
-print('After OverSampling, X_train shape: {}'.format(X_train_res.shape))
-print('After OverSampling, Y_train shape: {} \n'.format(Y_train_res.shape))
+print('After OverSampling, X_train shape: {}'.format(X_train_ros.shape))
+print('After OverSampling, Y_train shape: {} \n'.format(Y_train_ros.shape))
+# After OverSampling, X_train shape: (3838, 25)
+# After OverSampling, Y_train shape: (3838,)
 
-print('After OverSampling, counts of label "1": {}'.format(sum(Y_train_res==1)))
-print('After OverSampling, counts of label "0": {} \n'.format(sum(Y_train_res==0)))
+print('After OverSampling, counts of label "1": {}'.format(sum(Y_train_ros==1)))
+print('After OverSampling, counts of label "0": {} \n'.format(sum(Y_train_ros==0)))
+# After OverSampling, counts of label "1": 1919
+# After OverSampling, counts of label "0": 1919
 
 print('Original dataset shape %s' % Counter(Y_train))
-print('Oversampled dataset shape %s' % Counter(Y_train_res))
+print('Oversampled dataset shape %s' % Counter(Y_train_ros))
+# Original dataset shape Counter({0: 1919, 1: 171})
+# Oversampled dataset shape Counter({0: 1919, 1: 1919})
