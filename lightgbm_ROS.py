@@ -89,7 +89,7 @@ params [ 'boosting_type'] = 'gbdt' # GradientBoostingDecisionTree
 params ['objective'] = 'binary'
 params ['boost_from_average'] = False
 params [ 'metric' ] = 'binary_logloss' # metric for binary-class
-params [ 'max_depth'] = 2
+params [ 'max_depth'] = 3
 params [ 'num_leaves' ] = 4 # 최대 leaves는 2^(max_depth)
 params ['seed'] = 23456
 
